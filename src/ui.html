@@ -1,200 +1,262 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Inter, -apple-system, sans-serif; font-size: 12px; color: #1a1a1a; background: #fff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-  body {
-    font-family: Inter, -apple-system, sans-serif;
-    font-size: 12px;
-    color: #1a1a1a;
-    background: #fff;
-  }
+header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid #e5e5e5; flex-shrink: 0; }
+header h1 { font-size: 13px; font-weight: 600; }
+.wcag-badge { font-size: 10px; background: #eef4ff; color: #2563eb; padding: 2px 6px; border-radius: 10px; font-weight: 500; }
 
-  header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e5e5e5;
-  }
+.scan-btn { width: 100%; padding: 9px; background: #18a0fb; color: #fff; border: none; cursor: pointer; font-size: 13px; font-weight: 500; flex-shrink: 0; }
+.scan-btn:hover { background: #0d8de3; }
 
-  header h1 { font-size: 13px; font-weight: 600; }
-  header span { font-size: 11px; color: #888; }
+#toolbar { display: none; gap: 6px; padding: 7px 14px; border-bottom: 1px solid #f0f0f0; flex-shrink: 0; align-items: center; }
+#toolbar.visible { display: flex; }
+.tool-btn { font-size: 11px; padding: 3px 8px; border: 1px solid #ddd; background: #fff; border-radius: 4px; cursor: pointer; color: #444; }
+.tool-btn:hover { background: #f5f5f5; }
+.tool-btn.danger { color: #c0392b; border-color: #f5c6c6; }
+.tool-btn.danger:hover { background: #fff5f5; }
+.spacer { flex: 1; }
+.ignored-count { font-size: 10px; color: #aaa; }
 
-  .scan-btn {
-    width: 100%;
-    padding: 10px;
-    background: #18a0fb;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 0;
-  }
-  .scan-btn:hover { background: #0d8de3; }
+#status { padding: 8px 14px; font-size: 11px; color: #888; flex-shrink: 0; min-height: 28px; display: flex; align-items: center; }
 
-  #status {
-    padding: 10px 16px;
-    font-size: 11px;
-    color: #888;
-    min-height: 32px;
-    display: flex;
-    align-items: center;
-  }
+#results { overflow-y: auto; flex: 1; }
 
-  #results { overflow-y: auto; max-height: 400px; }
+.summary { padding: 6px 14px; font-size: 11px; background: #f8f8f8; border-bottom: 1px solid #eee; color: #555; }
+.summary b { color: #1a1a1a; }
+.summary .err { color: #c0392b; }
+.summary .wrn { color: #856404; }
 
-  .summary {
-    padding: 8px 16px;
-    font-size: 11px;
-    background: #f5f5f5;
-    border-bottom: 1px solid #e5e5e5;
-    color: #555;
-  }
-  .summary b { color: #1a1a1a; }
+.item { padding: 9px 14px; border-bottom: 1px solid #f0f0f0; cursor: pointer; transition: background 0.1s; position: relative; }
+.item:hover { background: #f7f9ff; }
+.item-header { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; }
+.item-name { font-size: 11px; font-weight: 600; color: #555; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.item-jump { font-size: 10px; color: #18a0fb; opacity: 0; transition: opacity 0.1s; flex-shrink: 0; }
+.item:hover .item-jump { opacity: 1; }
+.item-ignore { font-size: 10px; color: #bbb; cursor: pointer; padding: 1px 4px; border-radius: 3px; flex-shrink: 0; }
+.item-ignore:hover { background: #f0f0f0; color: #888; }
+.status-new { font-size: 9px; font-weight: 700; background: #dcfce7; color: #166534; padding: 1px 5px; border-radius: 8px; flex-shrink: 0; }
 
-  .item {
-    padding: 10px 16px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: background 0.1s;
-  }
-  .item:hover { background: #f7f9ff; }
+.item-preview { font-size: 11px; color: #777; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-style: italic; }
 
-  .item-name {
-    font-size: 11px;
-    font-weight: 600;
-    color: #555;
-    margin-bottom: 2px;
-  }
+.issue { display: flex; align-items: flex-start; gap: 6px; margin-top: 3px; }
+.badge { font-size: 10px; font-weight: 600; padding: 1px 5px; border-radius: 3px; white-space: nowrap; flex-shrink: 0; }
+.badge.error   { background: #ffe0e0; color: #c0392b; }
+.badge.warning { background: #fff3cd; color: #856404; }
+.issue-right { display: flex; flex-direction: column; gap: 3px; }
+.issue-msg { font-size: 11px; color: #444; line-height: 1.4; }
+.fix-row { display: flex; align-items: center; gap: 5px; margin-top: 2px; }
+.fix-swatch { width: 12px; height: 12px; border-radius: 2px; border: 1px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+.fix-hex { font-size: 10px; color: #555; font-family: monospace; }
+.fix-copy { font-size: 9px; color: #18a0fb; cursor: pointer; padding: 1px 4px; }
+.fix-copy:hover { text-decoration: underline; }
+.fix-label { font-size: 10px; color: #888; }
 
-  .item-preview {
-    font-size: 12px;
-    color: #1a1a1a;
-    margin-bottom: 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
+.section-title { padding: 6px 14px; font-size: 10px; font-weight: 600; color: #aaa; text-transform: uppercase; letter-spacing: 0.5px; background: #fafafa; border-bottom: 1px solid #f0f0f0; border-top: 1px solid #f0f0f0; }
+.item.fixed { opacity: 0.5; }
+.item.fixed .item-preview { text-decoration: line-through; }
+.fixed-badge { font-size: 9px; background: #dcfce7; color: #166534; padding: 1px 5px; border-radius: 8px; }
 
-  .issue {
-    display: flex;
-    align-items: flex-start;
-    gap: 6px;
-    margin-top: 4px;
-  }
-
-  .badge {
-    font-size: 10px;
-    font-weight: 600;
-    padding: 1px 5px;
-    border-radius: 3px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .badge.error   { background: #ffe0e0; color: #c0392b; }
-  .badge.warning { background: #fff3cd; color: #856404; }
-
-  .issue-msg { font-size: 11px; color: #444; line-height: 1.4; }
-
-  .empty {
-    padding: 32px 16px;
-    text-align: center;
-    color: #aaa;
-    font-size: 12px;
-  }
-
-  .error-msg {
-    padding: 10px 16px;
-    color: #c0392b;
-    font-size: 12px;
-  }
+.empty { padding: 28px 14px; text-align: center; color: #aaa; }
+.empty .icon { font-size: 28px; margin-bottom: 6px; }
+.error-msg { padding: 10px 14px; color: #c0392b; font-size: 12px; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>contrast-guard</h1>
-  <span>WCAG 2.1 AA</span>
+  <span class="wcag-badge">WCAG 2.1 AA</span>
 </header>
 
 <button class="scan-btn" id="scanBtn">Scan selection</button>
+
+<div id="toolbar">
+  <button class="tool-btn" id="copyMd">Copy Markdown</button>
+  <button class="tool-btn" id="copyCsv">Copy CSV</button>
+  <div class="spacer"></div>
+  <span class="ignored-count" id="ignoredCount"></span>
+  <button class="tool-btn danger" id="clearIgnore" style="display:none">Clear ignored</button>
+</div>
 
 <div id="status">Select a frame and click Scan.</div>
 <div id="results"></div>
 
 <script>
-  const btn = document.getElementById('scanBtn');
-  const status = document.getElementById('status');
-  const results = document.getElementById('results');
+  let _results = [], _fixed = [], _ignoredCount = 0;
 
-  btn.onclick = () => {
-    status.textContent = 'Scanning...';
-    results.innerHTML = '';
+  document.getElementById('scanBtn').onclick = () => {
+    document.getElementById('status').textContent = 'Scanning…';
+    document.getElementById('results').innerHTML = '';
+    document.getElementById('toolbar').classList.remove('visible');
     parent.postMessage({ pluginMessage: { type: 'scan' } }, '*');
   };
 
-  window.onmessage = (event) => {
-    const msg = event.data.pluginMessage;
+  document.getElementById('copyMd').onclick = () => copyMarkdown();
+  document.getElementById('copyCsv').onclick = () => copyCsv();
+  document.getElementById('clearIgnore').onclick = () =>
+    parent.postMessage({ pluginMessage: { type: 'clear-ignore' } }, '*');
+
+  document.getElementById('results').addEventListener('click', e => {
+    const item = e.target.closest('.item');
+    if (!item) return;
+
+    if (e.target.classList.contains('item-ignore')) {
+      e.stopPropagation();
+      parent.postMessage({ pluginMessage: { type: 'ignore', id: item.dataset.id } }, '*');
+      return;
+    }
+    if (e.target.classList.contains('fix-copy')) {
+      e.stopPropagation();
+      copyToClipboard(e.target.dataset.hex);
+      e.target.textContent = 'copied!';
+      setTimeout(() => e.target.textContent = 'copy', 1200);
+      return;
+    }
+    if (!item.classList.contains('fixed'))
+      parent.postMessage({ pluginMessage: { type: 'select', id: item.dataset.id } }, '*');
+  });
+
+  window.onmessage = e => {
+    const msg = e.data.pluginMessage;
     if (!msg) return;
 
     if (msg.type === 'error') {
-      status.textContent = '';
-      results.innerHTML = `<div class="error-msg">${msg.message}</div>`;
+      document.getElementById('status').textContent = '';
+      document.getElementById('results').innerHTML = `<div class="error-msg">${esc(msg.message)}</div>`;
       return;
     }
 
     if (msg.type === 'results') {
-      const items = msg.results;
-
-      if (items.length === 0) {
-        status.textContent = '';
-        results.innerHTML = `<div class="empty">No issues found. Looks good!</div>`;
-        return;
-      }
-
-      const errors   = items.reduce((n, i) => n + i.issues.filter(x => x.severity === 'error').length, 0);
-      const warnings = items.reduce((n, i) => n + i.issues.filter(x => x.severity === 'warning').length, 0);
-
-      status.textContent = '';
-      results.innerHTML = `
-        <div class="summary">
-          Found issues in <b>${items.length}</b> text layer${items.length > 1 ? 's' : ''} —
-          <b>${errors}</b> error${errors !== 1 ? 's' : ''},
-          <b>${warnings}</b> warning${warnings !== 1 ? 's' : ''}
-        </div>
-        ${items.map(item => `
-          <div class="item" data-id="${escHtml(item.id)}">
-            <div class="item-name">${escHtml(item.name)}</div>
-            <div class="item-preview">"${escHtml(item.preview)}"</div>
-            ${item.issues.map(issue => `
-              <div class="issue">
-                <span class="badge ${issue.severity}">${issue.severity}</span>
-                <span class="issue-msg">${escHtml(issue.message)}</span>
-              </div>
-            `).join('')}
-          </div>
-        `).join('')}
-      `;
+      _results = msg.results;
+      _fixed   = msg.fixed;
+      _ignoredCount = msg.ignoredCount;
+      render();
     }
   };
 
-  document.getElementById('results').addEventListener('click', (e) => {
-    const item = e.target.closest('.item');
-    if (item && item.dataset.id) {
-      parent.postMessage({ pluginMessage: { type: 'select', id: item.dataset.id } }, '*');
-    }
-  });
+  function render() {
+    document.getElementById('status').textContent = '';
 
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
+    const toolbar = document.getElementById('toolbar');
+    toolbar.classList.toggle('visible', _results.length > 0 || _fixed.length > 0);
+
+    const ic = document.getElementById('ignoredCount');
+    const cb = document.getElementById('clearIgnore');
+    ic.textContent  = _ignoredCount > 0 ? `${_ignoredCount} ignored` : '';
+    cb.style.display = _ignoredCount > 0 ? '' : 'none';
+
+    if (_results.length === 0 && _fixed.length === 0) {
+      document.getElementById('results').innerHTML =
+        `<div class="empty"><div class="icon">✓</div>No issues found. Looks good!</div>`;
+      return;
+    }
+
+    const errors   = _results.reduce((n,i) => n + i.issues.filter(x=>x.severity==='error').length, 0);
+    const warnings = _results.reduce((n,i) => n + i.issues.filter(x=>x.severity==='warning').length, 0);
+    const newCount = _results.filter(r => r.status === 'new').length;
+
+    let html = `<div class="summary">
+      Found issues in <b>${_results.length}</b> layer${_results.length!==1?'s':''} —
+      <b class="err">${errors} error${errors!==1?'s':''}</b>,
+      <b class="wrn">${warnings} warning${warnings!==1?'s':''}</b>
+      ${newCount > 0 ? `· <b style="color:#166534">${newCount} new</b>` : ''}
+    </div>`;
+
+    html += _results.map(item => renderItem(item, false)).join('');
+
+    if (_fixed.length > 0) {
+      html += `<div class="section-title">Fixed since last scan (${_fixed.length})</div>`;
+      html += _fixed.map(item => renderItem(item, true)).join('');
+    }
+
+    document.getElementById('results').innerHTML = html;
+  }
+
+  function renderItem(item, isFixed) {
+    const issues = item.issues.map(issue => {
+      const fixHtml = issue.suggestion ? `
+        <div class="fix-row">
+          <span class="fix-label">Try:</span>
+          <span class="fix-swatch" style="background:${esc(issue.suggestion)}"></span>
+          <span class="fix-hex">${esc(issue.suggestion)}</span>
+          <span class="fix-copy" data-hex="${esc(issue.suggestion)}">copy</span>
+        </div>` : '';
+      return `<div class="issue">
+        <span class="badge ${issue.severity}">${issue.severity}</span>
+        <div class="issue-right">
+          <span class="issue-msg">${esc(issue.message)}</span>
+          ${fixHtml}
+        </div>
+      </div>`;
+    }).join('');
+
+    const statusBadge = item.status === 'new' ? `<span class="status-new">NEW</span>` : '';
+    const fixedBadge  = isFixed ? `<span class="fixed-badge">FIXED</span>` : '';
+
+    return `<div class="item ${isFixed?'fixed':''}" data-id="${esc(item.id)}">
+      <div class="item-header">
+        <span class="item-name">${esc(item.name)}</span>
+        ${statusBadge}${fixedBadge}
+        <span class="item-jump">↗ select</span>
+        ${!isFixed ? `<span class="item-ignore" title="Ignore this layer">✕</span>` : ''}
+      </div>
+      <div class="item-preview">"${esc(item.preview)}"</div>
+      ${issues}
+    </div>`;
+  }
+
+  // ─── Export ────────────────────────────────────────────────────────────────
+
+  function copyToClipboard(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+  }
+
+  function copyMarkdown() {
+    const lines = ['# contrast-guard report\n'];
+    for (const item of _results) {
+      lines.push(`### ${item.name}`);
+      lines.push(`> "${item.preview}"\n`);
+      for (const issue of item.issues) {
+        lines.push(`- **${issue.severity.toUpperCase()}** ${issue.message}`);
+        if (issue.suggestion) lines.push(`  - Suggested fix: \`${issue.suggestion}\``);
+      }
+      lines.push('');
+    }
+    copyToClipboard(lines.join('\n'));
+    flash('copyMd', 'Copied!');
+  }
+
+  function copyCsv() {
+    const rows = [['Layer', 'Preview', 'Severity', 'Issue', 'Suggestion']];
+    for (const item of _results)
+      for (const issue of item.issues)
+        rows.push([item.name, item.preview, issue.severity, issue.message, issue.suggestion ?? '']);
+    const csv = rows.map(r => r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')).join('\n');
+    copyToClipboard(csv);
+    flash('copyCsv', 'Copied!');
+  }
+
+  function flash(id, text) {
+    const btn = document.getElementById(id);
+    const orig = btn.textContent;
+    btn.textContent = text;
+    setTimeout(() => btn.textContent = orig, 1500);
+  }
+
+  function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 </script>
 </body>
