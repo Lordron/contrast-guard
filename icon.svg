@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <clipPath id="left">
+      <rect x="0" y="0" width="64" height="128" rx="0"/>
+    </clipPath>
+    <clipPath id="right">
+      <rect x="64" y="0" width="64" height="128" rx="0"/>
+    </clipPath>
+    <clipPath id="round">
+      <rect x="0" y="0" width="128" height="128" rx="22"/>
+    </clipPath>
+  </defs>
+
+  <!-- rounded background -->
+  <rect x="0" y="0" width="128" height="128" rx="22" fill="#1a1a1a"/>
+
+  <!-- right half light -->
+  <rect x="64" y="0" width="64" height="128" fill="#f0f0f0" clip-path="url(#round)"/>
+
+  <!-- diagonal split line -->
+  <line x1="52" y1="0" x2="76" y2="128" stroke="#fff" stroke-width="2" opacity="0.15"/>
+
+  <!-- left: big white A — good contrast -->
+  <text x="32" y="88" text-anchor="middle"
+        font-family="Georgia, serif" font-size="72" font-weight="700"
+        fill="#ffffff" clip-path="url(#left)">A</text>
+
+  <!-- right: small gray a — bad contrast -->
+  <text x="96" y="80" text-anchor="middle"
+        font-family="Georgia, serif" font-size="48" font-weight="400"
+        fill="#bbbbbb" clip-path="url(#round)">a</text>
+
+  <!-- warning badge on bad side -->
+  <circle cx="96" cy="34" r="14" fill="#e74c3c"/>
+  <text x="96" y="39" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="16" font-weight="700"
+        fill="#ffffff">!</text>
+
+  <!-- checkmark badge on good side -->
+  <circle cx="32" cy="34" r="14" fill="#2ecc71"/>
+  <text x="32" y="40" text-anchor="middle"
+        font-family="Arial, sans-serif" font-size="18" font-weight="700"
+        fill="#ffffff">✓</text>
+</svg>

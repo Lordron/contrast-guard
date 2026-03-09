@@ -1,0 +1,12 @@
+{
+  "name": "contrast-guard",
+  "version": "0.1.0",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "devDependencies": {
+    "@figma/plugin-typings": "^1.90.0",
+    "typescript": "^5.3.0"
+  }
+}
